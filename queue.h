@@ -11,7 +11,7 @@ Queue nav_queue;
 
 void empty_queue(Queue* pq) {
 	pq->head = 0;
-	pq->tail = 0;
+	pq->tail = -1;
 	pq->item_count = 0;
 }
 
@@ -32,6 +32,8 @@ void enqueue(Queue* pq, int data) {
 		pq->tail = 0;
 	}
 
+	writeDebugStreamLine("ENQUEUEING %d", data);
+
 	pq->item_count++;
 }
 
@@ -40,14 +42,16 @@ int dequeue(Queue* pq) {
 		return 0;
 	}
 
-	pq->head++;
 	int data = pq->a[pq->head];
+	pq->head++;
 
 	if (pq->head == QUEUESIZE - 1) {
 		pq->head = 0;
 	}
 
 	pq->item_count--;
+
+	writeDebugStreamLine("DEQUEUEING %d", data);
 
 	return data;
 }
