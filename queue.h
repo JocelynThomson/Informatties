@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /**
  * @file    queue.h
  * @author  Julian van Doorn
@@ -165,4 +164,3 @@ int peek(Queue* pq) {
 
 	return pq->a[pq->head];
 }
->>>>>>> 5b29aef20c7d2fa7b03b3c2b10ada534c3a9233f
