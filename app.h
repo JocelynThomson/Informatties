@@ -1,5 +1,11 @@
+/**
+ * @file	app.h
+ * @author	Julian van Doorn
+ * @brief	Receives and handles input from the app.
+ */
+
 long nLastXmitTimeStamp = nPgmTime;
-long nDeltaTime         = 0;
+long nDeltaTime = 0;
 
 bool changing_speed = false;
 bool force_stopped = false;
@@ -14,6 +20,10 @@ void toggle_stop_robot() {
 	}
 }
 
+/**
+ * @brief Takes a string as input and runs the appropriate function.
+ * @param msg
+ */
 void handle_message(string msg) {
 	if (msg == "UP") {
 		enqueue_direction(FORWARD);
@@ -30,6 +40,9 @@ void handle_message(string msg) {
 	}
 }
 
+/**
+ * @brief Specialized task which incrementally increases or decreases speed.
+ */
 task start_stop_task() {
 	while (1) {
 		waitUntil(force_stopped);
@@ -54,6 +67,9 @@ task start_stop_task() {
 	}
 }
 
+/**
+ * @brief Task for receiving bluetooth input from the android app.
+ */
 task app_task() {
   TFileIOResult nBTCmdRdErrorStatus;
   int nSizeOfMessage;
@@ -79,6 +95,9 @@ task app_task() {
 	}
 }
 
+/**
+ * @brief Initializes app_task and start_stop_task
+ */
 void init_app() {
 	startTask(app_task);
 	startTask(start_stop_task);
