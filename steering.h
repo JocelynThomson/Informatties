@@ -1,35 +1,44 @@
-#include "sensors.h"
+#include "sensors_pid_enhanced.h"
+
+void recenter() {
+
+}
 
 void turn_left(int time){
-	motor[MOTOR_L] = -POWER;
-	motor[MOTOR_R] = POWER;
+	int p = get_power();
+	motor[MOTOR_L] = -p;
+	motor[MOTOR_R] = p;
 	wait1Msec(time);
 }
 
 void turn_right(int time){
-	motor[MOTOR_L] = POWER;
-	motor[MOTOR_R] = -POWER;
+	int p = get_power();
+	motor[MOTOR_L] = p;
+	motor[MOTOR_R] = -p;
 	wait1Msec(time);
 }
 
 void go_straight(int time){
-	motor[MOTOR_L] = POWER;
-	motor[MOTOR_R] = POWER;
+	int p = get_power();
+	motor[MOTOR_L] = p;
+	motor[MOTOR_R] = p;
 	wait1Msec(time);
 }
 
 void steer_left(int ms) {
+	int p = get_power();
 	clearTimer(T1);
 	while (time1[T1] < ms) {
 		motor[MOTOR_L] = get_power_left();
-		motor[MOTOR_R] = POWER;
+		motor[MOTOR_R] = p;
 	}
 }
 
 void steer_right(int ms) {
+	int p = get_power();
 	clearTimer(T1);
 	while (time1[T1] < ms) {
-		motor[MOTOR_L] = POWER;
+		motor[MOTOR_L] = p;
 		motor[MOTOR_R] = get_power_right();
 	}
 }
