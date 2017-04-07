@@ -4,12 +4,10 @@
  * @brief This file defines the navigation queue
  */
 
-#include <limits.h>
-
 #define NO_NODE -1
 #define NUM_NODES 8
 #define NUM_EDGES 4
-#define INFINITY INT_MAX
+#define INFINITY 0x7FFFFFFF
 
 #include "queue.h"
 
@@ -73,7 +71,7 @@ int edges[NUM_NODES][NUM_EDGES] = {
 
 Node nodes[NUM_NODES];
 
-void clear_nodes(Node nodes[NUM_NODES]) {
+void clear_nodes(Node nodes[]) {
 	for (int i = 0; i < NUM_NODES; i++) {
 		nodes[i].distance = INFINITY;
 		nodes[i].predecessor = NULL;
@@ -85,36 +83,36 @@ void breadth_first_search(Node* start_node, Node* stop_node, int num_nodes, int 
 	clear_nodes(nodes);
 	start_node->predecessor = NULL;
 	start_node->distance = 0;
-	
+
 	for (int i = 0; i < num_nodes; i++) {
 		if (&nodes[i] != start_node) {
 			nodes[i].distance = INFINITY;
 		}
 	}
-	
+
 	Queue q; // inits queue on stack
 	Queue* pq = &q; // references queue
 	init_queue(pq);
-	
+
 	enqueue(pq, start_node);
-	
+
 	Node* predecessor;
-	
+
 	while (pq->item_count > 0) {
 		Node* node = (Node*) dequeue(pq);
-		
+
 		for (int  j = 0; j < num_edges; j++) {
 			int connected_node_index = edges[node->index][j];
-			
-			
+
+
 			if (connected_node_index != -1) {
 				Node* connected_node = &nodes[connected_node_index];
-				
+
 				if (connected_node == stop_node) {
 					stop_node->predecessor = node;
 					goto found_route;
 				}
-				
+
 				if (connected_node->distance == INFINITY) {
 					connected_node->distance = node->distance + 1;
 					connected_node->predecessor = node;
@@ -123,20 +121,20 @@ void breadth_first_search(Node* start_node, Node* stop_node, int num_nodes, int 
 			}
 		}
 	}
-	
+
 	// No valid route found
 	return -1;
-	
+
 found_route:
 	predecessor = stop_node;
-	
+
 	do {
 		//printf("%d<-", predecessor->index);
 		predecessor = predecessor->predecessor;
 	} while (predecessor != start_node);
-	
+
 	//printf("%d\n", predecessor->index);
-	
+
 	return 1;
 }
 
