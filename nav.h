@@ -4,19 +4,15 @@
  * @brief This file defines the navigation queue
  */
 
+<<<<<<< HEAD
 #define NO_NODE -1
 #define NUM_NODES 8
 #define NUM_EDGES 4
 #define INFINITY 0x7FFFFFFF
 
+=======
+>>>>>>> parent of c67c77c... Uploaded pathfinding algorithm
 #include "queue.h"
-
-typedef struct Node {
-	int distance;
-	struct Node* predecessor;
-	int index;
-} Node;
-
 
 /**
  * @brief Enumerates the values that are used inside the nav_queue
@@ -57,6 +53,7 @@ DIRECTION dequeue_direction() {
 DIRECTION peek_direction() {
 	return (DIRECTION) peek(&nav_queue);
 }
+<<<<<<< HEAD
 
 int edges[NUM_NODES][NUM_EDGES] = {
 	{ 1, 4, NO_NODE, NO_NODE },
@@ -142,3 +139,5 @@ found_route:
 	// breadth_first_search(&nodes[4], &nodes[7], NUM_NODES, NUM_EDGES, edges);
 	// breadth_first_search(&nodes[2], &nodes[4], NUM_NODES, NUM_EDGES, edges);
 // }
+=======
+>>>>>>> parent of c67c77c... Uploaded pathfinding algorithm
