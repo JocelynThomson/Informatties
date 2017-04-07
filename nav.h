@@ -7,7 +7,7 @@
 #include "queue.h"
 
 #define NO_NODE -1
-#define NUM_NODES 8
+#define NUM_NODES 25
 #define NUM_EDGES 4
 #define INFINITY 0x7FFFFFFF
 
@@ -17,15 +17,32 @@ struct Node {
 	int index;
 };
 
-int edges[NUM_NODES][NUM_EDGES] = {
-	{ 1, 4, NO_NODE, NO_NODE },
-	{ 0, 5, NO_NODE, NO_NODE },
-	{ 3, 5, 6, NO_NODE },
-	{ 2, 6, 7, NO_NODE },
-	{ 0, NO_NODE, NO_NODE, NO_NODE },
-	{ 1, 2, 6, NO_NODE },
-	{ 2, 3, 5, 7 },
-	{ 3, 6, NO_NODE, NO_NODE }
+int edges[NUM_NODES][NUM_EDGES] = { // { N, E, S, W }
+	{ 5, 1, NO_NODE, NO_NODE }, 	//N0 
+	{ 6, 2, 0, NO_NODE }, 		//N1
+	{ 7, 3, NO_NODE, 1 }, 		//N2
+	{ 8, 4, NO_NODE, 2 }, 		//N3
+	{ 9, NO_NODE, NO_NODE, 3 }, 	//N4
+	{ 10, 6, 0, NO_NODE }, 		//N5
+	{ 11, 7, 1, 5 }, 		//N6
+	{ 12, 8, 2, 6 }, 		//N7
+	{ 13, 9, 3, 7 },		//N8
+	{ 14, NO_NODE, 4, 8 },		//N9
+	{ 15, 11, 5, NO_NODE },		//N10
+	{ 16, 12, 6, 10 },		//N11
+	{ 17, 13, 7, 11 },		//N12
+	{ 18, 14, 8, 12 },		//N13
+	{ 19, NO_NODE, 9, 13 },		//N14
+	{ 20, 16, 10, NO_NODE },	//N15
+	{ 21, 17, 11, 15 },		//N16
+	{ 22, 18, 12, 16 },		//N17
+	{ 23, 19, 13, 17 },		//N18
+	{ 24, NO_NODE, 14, 18 },	//N19
+	{ NO_NODE, 21, 15, NO_NODE },	//N20
+	{ NO_NODE, 22, 16, 20 },	//N21
+	{ NO_NODE, 23, 17, 21 },	//N22
+	{ NO_NODE, 24, 18, 22 },	//N23
+	{ NO_NODE, NO_NODE, 19, 23 }	//N24
 };
 
 Node nodes[NUM_NODES];
