@@ -64,8 +64,6 @@ task main() {
 		int power_right = get_power_right(stop_speed_multiplier);
 		int sonar_value = get_sonar();
 
-		show_queue(nav_queue);
-
 		if ((power_left == 0 || power_right == 0) && abs(power_left - power_right) < 5) {
 			status = SLOWING_DOWN_JUNCTION;
 		}

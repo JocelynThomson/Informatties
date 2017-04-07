@@ -1,7 +1,7 @@
 /**
  * @file    queue.h
  * @author  Julian van Doorn
- * @brief   This file implements the queue datastructure. 
+ * @brief   This file implements the queue datastructure.
  */
 
 #define QUEUESIZE 128
@@ -10,7 +10,7 @@
  * @brief The queue is a FIFO (first in firt out) data structure.
  *
  * The first item put in the queue is also the first item to be retrieved. Any subsequent items
- * are put on the "back" of the queue. 
+ * are put on the "back" of the queue.
  */
 struct Queue {
 		int a[QUEUESIZE];   /**< The array which hold the items on the queue.  */
@@ -56,8 +56,6 @@ void enqueue(Queue* pq, int data) {
 	if (pq->tail == QUEUESIZE - 1) {
 		pq->tail = 0;
 	}
-
-	writeDebugStreamLine("ENQUEUEING %d", data);
 
 	pq->item_count++;
 }
