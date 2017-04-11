@@ -7,7 +7,7 @@
 #include "queue.h"
 
 #define NO_NODE -1
-#define NUM_NODES 8
+#define NUM_NODES 25
 #define NUM_EDGES 4
 #define INFINITY 0x7FFFFFFF
 
@@ -17,29 +17,102 @@ struct Node {
 	int index;
 };
 
-int edges[NUM_NODES][NUM_EDGES] = {
-	{ 1, 4, NO_NODE, NO_NODE },
-	{ 0, 5, NO_NODE, NO_NODE },
-	{ 3, 5, 6, NO_NODE },
-	{ 2, 6, 7, NO_NODE },
-	{ 0, NO_NODE, NO_NODE, NO_NODE },
-	{ 1, 2, 6, NO_NODE },
-	{ 2, 3, 5, 7 },
-	{ 3, 6, NO_NODE, NO_NODE }
-};
-
 Node nodes[NUM_NODES];
+Node* path[NUM_NODES];
 
 /**
  * @brief Enumerates the values that are used inside the nav_queue
  */
 enum DIRECTION {
-	NONE = 0,			/**< No operation*/
-	FORWARD = 1,	/**< Steer forward at junction*/
-	LEFT = 2,			/**< Steer left at junction*/
-	RIGHT = 3,		/**< Steer right at junction*/
-	TURNABOUT = 4	/**< Turn around at junction*/
+	NONE = -1,			/**< No operation*/
+	FORWARD = 0,	/**< Steer forward at junction*/
+	RIGHT = 1,		/**< Steer right at junction*/
+	TURNABOUT = 2,	/**< Turn around at junction*/
+	LEFT = 3			/**< Steer left at junction*/
 };
+
+void print_direction(DIRECTION dir) {
+	switch (dir) {
+		case NONE:
+			writeDebugStreamLine("NONE");
+		break;
+		case FORWARD:
+			writeDebugStreamLine("FORWARD");
+		break;
+		case RIGHT:
+			writeDebugStreamLine("RIGHT");
+		break;
+		case TURNABOUT:
+			writeDebugStreamLine("TURNABOUT");
+		break;
+		case LEFT:
+			writeDebugStreamLine("LEFT");
+		break;
+	}
+}
+
+enum CARDINAL_DIRECTION {
+	NORTH = 0,
+	EAST = 1,
+	SOUTH = 2,
+	WEST = 3
+};
+
+int edges[NUM_NODES][NUM_EDGES] = { // { N, E, S, W }
+	{ 5, NO_NODE, NO_NODE, NO_NODE }, 	//N0
+	{ 6, 2, 0, NO_NODE }, 		//N1
+	{ 7, 3, NO_NODE, 1 }, 		//N2
+	{ 8, 4, NO_NODE, 2 }, 		//N3
+	{ 9, NO_NODE, NO_NODE, 3 }, 	//N4
+	{ 10, 6, 0, NO_NODE }, 		//N5
+	{ 11, NO_NODE, 1, 5 }, 		//N6
+	{ 12, 8, 2, 6 }, 		//N7
+	{ 13, 9, 3, 7 },		//N8
+	{ 14, NO_NODE, 4, 8 },		//N9
+	{ NO_NODE, 11, 5, NO_NODE },		//N10
+	{ NO_NODE, 12, 6, 10 },		//N11
+	{ 17, 13, 7, 11 },		//N12
+	{ 18, 14, 8, 12 },		//N13
+	{ 19, NO_NODE, 9, 13 },		//N14
+	{ 20, 16, 10, NO_NODE },	//N15
+	{ 21, 17, 11, 15 },		//N16
+	{ NO_NODE, 18, 12, 16 },		//N17
+	{ 23, 19, 13, 17 },		//N18
+	{ 24, NO_NODE, 14, 18 },	//N19
+	{ NO_NODE, 21, 15, NO_NODE },	//N20
+	{ NO_NODE, 22, 16, 20 },	//N21
+	{ NO_NODE, 23, 17, 21 },	//N22
+	{ NO_NODE, 24, 18, 22 },	//N23
+	{ NO_NODE, NO_NODE, 19, 23 }	//N24
+};
+
+/*
+	{ 5, 1, NO_NODE, NO_NODE }, 	//N0
+	{ 6, 2, 0, NO_NODE }, 		//N1
+	{ 7, 3, NO_NODE, 1 }, 		//N2
+	{ 8, 4, NO_NODE, 2 }, 		//N3
+	{ 9, NO_NODE, NO_NODE, 3 }, 	//N4
+	{ 10, 6, 0, NO_NODE }, 		//N5
+	{ 11, 7, 1, 5 }, 		//N6
+	{ 12, 8, 2, 6 }, 		//N7
+	{ 13, 9, 3, 7 },		//N8
+	{ 14, NO_NODE, 4, 8 },		//N9
+	{ 15, 11, 5, NO_NODE },		//N10
+	{ 16, 12, 6, 10 },		//N11
+	{ 17, 13, 7, 11 },		//N12
+	{ 18, 14, 8, 12 },		//N13
+	{ 19, NO_NODE, 9, 13 },		//N14
+	{ 20, 16, 10, NO_NODE },	//N15
+	{ 21, 17, 11, 15 },		//N16
+	{ 22, 18, 12, 16 },		//N17
+	{ 23, 19, 13, 17 },		//N18
+	{ 24, NO_NODE, 14, 18 },	//N19
+	{ NO_NODE, 21, 15, NO_NODE },	//N20
+	{ NO_NODE, 22, 16, 20 },	//N21
+	{ NO_NODE, 23, 17, 21 },	//N22
+	{ NO_NODE, 24, 18, 22 },	//N23
+	{ NO_NODE, NO_NODE, 19, 23 }	//N24
+*/
 
 /**
  * @brief Initializes the nav_queue
@@ -75,7 +148,38 @@ void enqueue_node(Queue* pq, Node* data) {
 }
 
 Node* dequeue_node(Queue* pq) {
-	return &nodes[dequeue(pq)];
+	return (Node*) dequeue(pq);
+}
+
+DIRECTION translate_world_to_local(int curr, int next) {
+	return (DIRECTION) ((next - curr + 4) % 4);
+}
+
+void enqueue_path(int depth) {
+	int curr_car_dir = NORTH;
+
+	writeDebugStreamLine("Enqueing path depth: %d", depth);
+
+
+	for (int i = 0; i < depth; i++) {
+		Node* n = path[i];
+		writeDebugStreamLine("%d: %d", i, n->index);
+	}
+
+	for (int i = 0; i < depth - 1; i++) {
+		Node* curr_node = path[i];
+		Node* next_node = path[i + 1];
+
+		for (int j = 0; j < 4; j++) {
+			//writeDebugStreamLine("Left: %d Right: %d", edges[curr_node->index][j], next_node->index);
+			if (edges[curr_node->index][j] == next_node->index) {
+				DIRECTION turn_dir = translate_world_to_local(curr_car_dir, j);
+				print_direction(turn_dir);
+				enqueue_direction(turn_dir);
+				curr_car_dir = j;
+			}
+		}
+	}
 }
 
 void clear_nodes(Node* nodes) {
@@ -85,6 +189,39 @@ void clear_nodes(Node* nodes) {
 		nodes[i].index = i;
 	}
 }
+
+void clear_path() {
+	for (int i = 0; i < NUM_NODES; i++) {
+		path[i] = NULL;
+	}
+}
+
+//int main(void){
+//    int card_dir = compass(prev_node, current_node);
+//    printf("card_dir: %d \n", card_dir);
+//    int richting = action(current_node, next_node);
+//    printf("richting: %d\n", richting);
+//}
+
+//Grid is 5x5 met linksonder = 0, rechtsonder = 4, linksboven = 20, rechtsboven = 24
+//CARDINAL_DIRECTION cardinal_dir = NORTH;
+//Node* current_node = &NODES[0];
+
+//if (next_node > current_node) {
+//	if (next_node == current_node + 1) {
+//		return EAST;
+//	} else {
+//		return NORTH;
+//	}
+//} else {
+//	if (next_node == current_node - 1) {
+//		return WEST;
+//	} else {
+//		return SOUTH;
+//	}
+//}
+
+Queue bfs_queue; // inits queue on stack
 
 int breadth_first_search(Node* start_node, Node* stop_node) {
 	clear_nodes(nodes);
@@ -97,16 +234,12 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 		}
 	}
 
-	Queue q; // inits queue on stack
-	Queue* pq = &q; // references queue
-	init_queue(pq);
-
-	enqueue_node(pq, start_node);
-
+	init_queue(&bfs_queue);
+	enqueue_node(&bfs_queue, start_node);
 	Node* parent;
 
-	while (pq->item_count > 0) {
-		Node* node = dequeue_node(pq);
+	while (bfs_queue.item_count > 0) {
+		Node* node = dequeue_node(&bfs_queue);
 
 		for (int  j = 0; j < NUM_EDGES; j++) {
 			int connected_node_index = edges[node->index][j];
@@ -123,7 +256,7 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 				if (connected_node->distance == INFINITY) {
 					connected_node->distance = node->distance + 1;
 					connected_node->parent = node;
-					enqueue_node(pq, connected_node);
+					enqueue_node(&bfs_queue, connected_node);
 				}
 			}
 		}
@@ -135,12 +268,28 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 found_route:
 	parent = stop_node;
 
+	int depth = 0;
+
 	do {
-		//printf("%d<-", parent->index);
 		parent = parent->parent;
+		depth++;
 	} while (parent != start_node);
 
-	//printf("%d\n", parent->index);
+	parent = stop_node;
+
+	for (int i = depth; i >= 0; i--) {
+		path[i] = parent;
+		parent = parent->parent;
+	}
+
+	depth++;
+
+	for (int i = 0; i < depth; i++) {
+		Node* n = path[i];
+		writeDebugStreamLine("%d: %d", i, n->index);
+	}
+
+	enqueue_path(depth);
 
 	return 1;
 }

@@ -54,28 +54,46 @@ task main() {
 	init_nav_queue();
 	init_app();
 
+	//breadth_first_search(nodes[0], nodes[2]);
+
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
 
+	nullify_derivative();
+
 	while (1) {
-		print_status();
+		//print_status();
 
 		int power_left = get_power_left(stop_speed_multiplier);
 		int power_right = get_power_right(stop_speed_multiplier);
 		int sonar_value = get_sonar();
+
 
 		if ((power_left == 0 || power_right == 0) && abs(power_left - power_right) < 5) {
 			status = SLOWING_DOWN_JUNCTION;
 		}
 
 		if (status == SLOWING_DOWN_JUNCTION) {
-			int p = get_power();
+			wait1Msec(150);
 
-			for (int i = p; i > 0; i--) {
-				motor[MOTOR_L] = i;
-				motor[MOTOR_R] = i;
-				wait1Msec(40);
+			float speed_multiplier = 1.0;
+
+			while (speed_multiplier > 0) {
+				power_left = get_power_left(speed_multiplier);
+				power_right = get_power_right(speed_multiplier);
+				motor[MOTOR_L] = power_left;
+				motor[MOTOR_R] = power_right;
+				speed_multiplier -= 0.02;
+				wait1Msec(10);
 			}
+
+			//int p = get_power();
+
+			//for (int i = p; i > 0; i--) {
+			//	motor[MOTOR_L] = i;
+			//	motor[MOTOR_R] = i;
+			//	wait1Msec(7);
+			//}
 
 			status = WAITING_FOR_DIRECTION;
 		}
@@ -87,30 +105,53 @@ task main() {
 			power_right = 0;
 			DIRECTION dir = dequeue_direction();
 
+			if (dir != NONE) {
+				writeDebugStreamLine("%d", dir);
+			}
+
+			int p = get_power();
+
 			switch(dir) {
 				case LEFT:
-					steer_left(1000);
+					//steer_left(1000);
+					//status = FOLLOWING_LINE;
+
+					motor[MOTOR_L] = -p;
+					motor[MOTOR_R] = p;
+
+					waitUntil(get_light_left() < white_value - 5);
+
+					motor[MOTOR_L] = -p;
+					motor[MOTOR_R] = p;
+
+					waitUntil(get_light_left() > white_value - 5);
+					wait1Msec(50);
+
+					motor[MOTOR_L] = -p;
+					motor[MOTOR_R] = p;
+
+					nullify_derivative();
 					status = FOLLOWING_LINE;
-
-					//int p = get_power();
-
-					//motor[MOTOR_L] = -p;
-					//motor[MOTOR_R] = p;
-
-					//waitUntil(get_light_left() < white_value - 5);
-
-					//motor[MOTOR_L] = -p;
-					//motor[MOTOR_R] = p;
-
-					//waitUntil(get_light_left() > white_value - 5);
-
-					//motor[MOTOR_L] = -p;
-					//motor[MOTOR_R] = p;
-
-					//undo_derivative();
 				break;
 				case RIGHT:
-					steer_right(1000);
+					//steer_right(1000);
+					//status = FOLLOWING_LINE;
+
+					motor[MOTOR_L] = p;
+					motor[MOTOR_R] = -p;
+
+					waitUntil(get_light_right() < white_value - 5);
+
+					motor[MOTOR_L] = p;
+					motor[MOTOR_R] = -p;
+
+					waitUntil(get_light_right() > white_value - 5);
+					wait1Msec(50);
+
+					motor[MOTOR_L] = p;
+					motor[MOTOR_R] = -p;
+
+					nullify_derivative();
 					status = FOLLOWING_LINE;
 				break;
 				case TURNABOUT:
@@ -118,12 +159,12 @@ task main() {
 					status = FOLLOWING_LINE;
 				break;
 				case FORWARD:
-					int origin_l = get_light_left();
-					int origin_r = get_light_right();
-					//int p = get_power();
-					motor[MOTOR_L] = p;
-					motor[MOTOR_R] = p;
-					waitUntil(get_light_left() > origin_l && get_light_right() > origin_r);
+					//int origin_l = get_light_left();
+					//int origin_r = get_light_right();
+					////int p = get_power();
+					//motor[MOTOR_L] = p;
+					//motor[MOTOR_R] = p;
+					//waitUntil(get_light_left() > origin_l && get_light_right() > origin_r);
 					status = FOLLOWING_LINE;
 				break;
 			}

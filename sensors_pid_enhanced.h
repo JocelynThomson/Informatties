@@ -7,13 +7,15 @@
 
 #include "nav.h"
 
-#define POWER 75    /**< Defines the power value for the speed of the engines. */
+#define POWER 100    /**< Defines the power value for the speed of the engines. */
 
 const int white_value = 64;         /**< The value for the white colour of the board. */
-const int junction_derivative = 1;  /**< The derivative for junctions. */
+const int junction_derivative = 2;  /**< The derivative for junctions. */
 
 int last_error_l = 0;   /**< The last error from the left sensor. */
 int last_error_r = 0;   /**< The last error from the right sensor. */
+
+float stop_speed_multiplier2 = 1.0;
 
 /**
  * @brief   This method returns the power for the engines which depends on the direction of the robot.
@@ -24,7 +26,7 @@ int get_power() {
 		return 1.0 * POWER;
 	}
 
-	return 0.6 * POWER;
+	return 1.0 * POWER;
 }
 
 /**
@@ -65,7 +67,7 @@ int get_power_left(float stop_speed_multiplier = 1.0) {
 		status = SLOWING_DOWN_JUNCTION;
 	}
 
-	int net_power = get_power() * stop_speed_multiplier + ((error + derivative) * 300 / white_value);
+	int net_power = get_power() * stop_speed_multiplier + ((error + derivative) * (300 / white_value));
 
 	last_error_l = error;
 
@@ -86,7 +88,7 @@ int get_power_right(float stop_speed_multiplier = 1.0) {
 		status = SLOWING_DOWN_JUNCTION;
 	}
 
-	int net_power = get_power() * stop_speed_multiplier + ((error + derivative) * 300 / white_value);
+	int net_power = get_power() * stop_speed_multiplier + ((error + derivative) * (300 / white_value));
 
 	last_error_r = error;
 
@@ -94,9 +96,9 @@ int get_power_right(float stop_speed_multiplier = 1.0) {
 }
 
 /**
- * @brief This method adjust error from the right and left engines.
+ * @brief This sets the last error to the current error so the derivative becomes 0.
  */
-void undo_derivative() {
+void nullify_derivative() {
 	int light_val;
 	int error;
 

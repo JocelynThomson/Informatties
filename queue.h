@@ -51,7 +51,7 @@ void enqueue(Queue* pq, int data) {
 
 	pq->tail++;
 
-	nav_queue.a[pq->tail] = data;
+	pq->a[pq->tail] = data;
 
 	if (pq->tail == QUEUESIZE - 1) {
 		pq->tail = 0;
@@ -67,7 +67,7 @@ void enqueue(Queue* pq, int data) {
  */
 int dequeue(Queue* pq) {
 	if (pq->item_count == 0) {
-		return 0;
+		return -1;
 	}
 
 	int data = pq->a[pq->head];
@@ -79,8 +79,6 @@ int dequeue(Queue* pq) {
 
 	pq->item_count--;
 
-	writeDebugStreamLine("DEQUEUEING %d", data);
-
 	return data;
 }
 
@@ -91,7 +89,7 @@ int dequeue(Queue* pq) {
  */
 int peek(Queue* pq) {
 	if (pq->item_count == 0) {
-		return 0;
+		return -1;
 	}
 
 	return pq->a[pq->head];

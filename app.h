@@ -4,9 +4,6 @@
  * @brief	Receives and handles input from the app.
  */
 
-long nLastXmitTimeStamp = nPgmTime;
-long nDeltaTime = 0;
-
 bool changing_speed = false;
 bool force_stopped = false;
 float stop_speed_multiplier = 1.0;
