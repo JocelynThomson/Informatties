@@ -11,31 +11,43 @@
 #define NUM_EDGES 4
 #define INFINITY 0x7FFFFFFF
 
+/**
+ * @brief A node represent a single juntion on the map/route
+ */
 struct Node {
-	int distance;
-	struct Node* parent;
-	int index;
-	bool enabled;
+	int distance;			/**< The distance relative from the root node */
+	struct Node* parent;	/**< The previous or parent node */
+	int index;				/**< The index of the node */
+	bool enabled;			/**< Boolean to indicate if there is a obstacle on the node */
 };
 
 /**
  * @brief Enumerates the values that are used inside the nav_queue
  */
 enum DIRECTION {
-	NONE = -1,			/**< No operation*/
-	FORWARD = 0,	/**< Steer forward at junction*/
-	RIGHT = 1,		/**< Steer right at junction*/
-	TURNABOUT = 2,	/**< Turn around at junction*/
-	LEFT = 3			/**< Steer left at junction*/
+	NONE = -1,			/**< No operation */
+	FORWARD = 0,		/**< Steer forward at junction */
+	RIGHT = 1,			/**< Steer right at junction */
+	TURNABOUT = 2,		/**< Turn around at junction */
+	LEFT = 3			/**< Steer left at junction */
 };
 
+/**
+ * @brief Enumeration for the cardinal directions for the robot. This is used to determine
+ *        what left, right, up and down for the robot is.
+ */
 enum CARDINAL_DIRECTION {
-	NORTH = 0,
-	EAST = 1,
-	SOUTH = 2,
-	WEST = 3
+	NORTH = 0,	/**< North or up */
+	EAST = 1,	/**< East or right */
+	SOUTH = 2,	/**< South or down */
+	WEST = 3	/**< West or left */
 };
 
+/**
+ * @brief This 2d-integer array holds all the edges or connections between each individual node. Each node 
+ *        can have a maximum of four edges. For example, the first node N0 in the array is connected with
+ *        the nodes N5 and N1.
+ */
 int edges[NUM_NODES][NUM_EDGES] = { // { N, E, S, W }
 	{ 5, 1, NO_NODE, NO_NODE }, 	//N0
 	{ 6, 2, NO_NODE, 0 }, 		//N1
@@ -74,6 +86,10 @@ Node* going_to_node = NULL;
 
 CARDINAL_DIRECTION cur_car_dir = NORTH;
 
+/**
+ * @brief		This method is used to keep track of the position and orientation of the robot
+ * @param dir 	The direction of the robot.
+ */
 void push_back_action(DIRECTION dir) {
 	if (last_node == NULL) {
 		next_node = &nodes[0];
@@ -89,6 +105,10 @@ void push_back_action(DIRECTION dir) {
 
 }
 
+/**
+ * @brief		Prints the current direction of the robot.
+ * @param dir 	The direction of the robot.
+ */
 void print_direction(DIRECTION dir) {
 	switch (dir) {
 		case NONE:
@@ -118,7 +138,7 @@ void init_nav_queue() {
 
 /**
  * @brief Enqueues the provided arguments into the nav_queue
- * @param dir
+ * @param dir The desired direction to be executed by the robot
  */
 void enqueue_direction(DIRECTION dir) {
 	enqueue(&nav_queue, dir);
@@ -138,30 +158,41 @@ DIRECTION peek_direction() {
 	return (DIRECTION) peek(&nav_queue);
 }
 
+/**
+ * @brief 		Enqueues the next node in the path in the queue datastructure
+ * @param pq 	Pointer to the queue datastructure
+ * @param data 	The node that needs to be enqueued in the queue
+ */
 void enqueue_node(Queue* pq, Node* data) {
-	//writeDebugStreamLine("ENQUEUEING %d", (int) (data->index));
 	enqueue(pq, (int) (data->index));
 }
 
+/**
+ * @brief		This method returns the first node in the queue.
+ * @param pq	Pointer to the queue datastructure
+ * @return 		The (address of) first node in the queue
+ */
 Node* dequeue_node(Queue* pq) {
 	Node* data = (Node*) dequeue(pq);
-	//writeDebugStreamLine("DEQUEUEING %d", data);
 	return &nodes[data];
 }
 
+/**
+ * @brief 		This method determines the turn direction based on the cardinal direction of the robot
+ * @param curr  The current direction of the robot
+ * @param next  The next direction the robot must go to
+ * @return 		The next turn direction for the robot
+ */
 DIRECTION translate_world_to_local(int curr, int next) {
 	return (DIRECTION) ((next - curr + 4) % 4);
 }
 
+/**
+ * @brief		Translates all global cardinal directions to local turn directions.
+ * @param depth The depth of the tree (the length of the path)
+ */
 void enqueue_path(int depth) {
-	//writeDebugStreamLine("Enqueing path depth: %d", depth);
 	CARDINAL_DIRECTION loc_cur_car_dir = cur_car_dir;
-
-
-//	for (int i = 0; i < depth; i++) {
-//		Node* n = path[i];
-		//writeDebugStreamLine("%d: %d", i, n->index);
-//	}
 
 	for (int i = 0; i < depth - 1; i++) {
 		Node* curr_node = path[i];
@@ -178,6 +209,10 @@ void enqueue_path(int depth) {
 	}
 }
 
+/**
+ * @brief 		Resets all the nodes to their default state
+ * @param nodes The nodes array
+ */
 void clear_nodes(Node* nodes) {
 	for (int i = 0; i < NUM_NODES; i++) {
 		nodes[i].distance = INFINITY;
@@ -189,11 +224,15 @@ void clear_nodes(Node* nodes) {
 
 Queue bfs_queue; // inits queue on stack
 
+/**
+ * @brief				Calculates and immediatly enqueues the path
+ * @param start_node	The start node/point of the robot
+ * @param stop_node		The end node/destination of the robot
+ * @return 				Returns 1 on succes -1 otherwise
+ */
 int breadth_first_search(Node* start_node, Node* stop_node) {
 	going_to_node = stop_node;
-	writeDebugStreamLine("CALCULATING PATH FROM: %d TO: %d", start_node->index, stop_node->index);
 
-	//clear_nodes(nodes);
 	start_node->parent = NULL;
 	start_node->distance = 0;
 
@@ -205,12 +244,11 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 
 	init_queue(&bfs_queue);
 	enqueue_node(&bfs_queue, start_node);
-	//writeDebugStreamLine("%p", dequeue_node(&bfs_queue));
+
 	Node* parent;
 
 	while (bfs_queue.item_count > 0) {
 		Node* node = dequeue_node(&bfs_queue);
-		//writeDebugStreamLine("%p", node);
 
 		for (int  j = 0; j < NUM_EDGES; j++) {
 			int connected_node_index = edges[node->index][j];
@@ -222,8 +260,6 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 					stop_node->parent = node;
 					goto found_route;
 				}
-
-				writeDebugStreamLine("node: %d enabled: %d", connected_node->index, connected_node->enabled);
 
 				if (connected_node->distance == INFINITY && connected_node->enabled) {
 					connected_node->distance = node->distance + 1;
