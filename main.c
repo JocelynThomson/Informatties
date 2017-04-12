@@ -21,7 +21,7 @@ enum STATUS_ENUM {
 
 STATUS_ENUM status = FOLLOWING_LINE;
 
-#include "sensors_pid_enhanced.h"
+#include "sensors.h"
 #include "nav.h"
 #include "app.h"
 #include "steering.h"
@@ -46,15 +46,37 @@ void print_status() {
 	}
 }
 
+void calibrate() {
+	int black = 64;
+	int white = 0;
+
+	for (int i = 0; i < 100; i++) {
+		motor[MOTOR_L] = -20;
+		motor[MOTOR_R] = 20;
+		int lv = get_light_left();
+
+		if (lv > white) {
+			white = lv;
+		}
+		wait1Msec(10);
+	}
+}
+
 /**
  * @brief Main loop for the robot.
  * @todo Shrink the main loop and put large chunks of code in functions.
  */
+
+task findPath() {
+	//breadth_first_search(&nodes[0], &nodes[24]);
+}
+
 task main() {
+	white_value = get_light_left();
 	init_nav_queue();
 	init_app();
 
-	//breadth_first_search(nodes[0], nodes[2]);
+	startTask(findPath);
 
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
@@ -68,6 +90,9 @@ task main() {
 		int power_right = get_power_right(stop_speed_multiplier);
 		int sonar_value = get_sonar();
 
+		if (status == FOLLOWING_LINE) {
+			playSoundFile("! Attention.rso");
+		}
 
 		if ((power_left == 0 || power_right == 0) && abs(power_left - power_right) < 5) {
 			status = SLOWING_DOWN_JUNCTION;
@@ -106,7 +131,7 @@ task main() {
 			DIRECTION dir = dequeue_direction();
 
 			if (dir != NONE) {
-				writeDebugStreamLine("%d", dir);
+				push_back_action(dir);
 			}
 
 			int p = get_power();
@@ -170,44 +195,17 @@ task main() {
 			}
 		}
 
-		if(sonar_value < 10){
-			bool object = true;
-			while (object == true){
-				turn_right(600);
-				go_straight(400);
-				turn_left(600);
-				sonar_value = get_sonar();
-				if (sonar_value > 20){
-					object = false;
-			  }
-			}
-			turn_right(600);
-			go_straight(900);
-			turn_left(600);
-			go_straight(700);
-			turn_left(600);
-			sonar_value = get_sonar();
-			if (sonar_value < 20){
-					object = true;
-			}
-			while (object == true){
-				turn_right(600);
-				go_straight(700);
-				turn_left(600);
-				sonar_value = get_sonar();
-				if (sonar_value > 20){
-					object = false;
-			  }
-			}
-			turn_right(600);
-			go_straight(700);
-			turn_left(600);
-			enqueue_direction(RIGHT);
-			//go_straight(400);
+		//writeDebugStreamLine("%d", sonar_value);
 
-			//if (get_light_left() < 50 || get_light_right() < 50){
-			//	enqueue_direction(RIGHT);
-			//}
+		if(sonar_value < 15){
+			turn_around(power_left, power_right);
+
+			if (mode == MANHATTAN) {
+				cur_car_dir += 2;
+				next_node->enabled = false;
+				empty_queue(&nav_queue);
+				breadth_first_search(next_node, going_to_node);
+			}
 		}
 
    	motor[MOTOR_L] = power_left;

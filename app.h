@@ -4,12 +4,36 @@
  * @brief	Receives and handles input from the app.
  */
 
+#include "sensors.h"
+
 bool changing_speed = false;
 bool force_stopped = false;
 float stop_speed_multiplier = 1.0;
 
 const int kMaxSizeOfMessage = 30;
 const int INBOX = 5;
+
+enum MODE {
+	MANHATTAN = 0,
+	BRABANT = 1
+};
+
+MODE mode = MANHATTAN;
+
+void cycle_mode() {
+	mode++;
+	mode = (MODE) (mode % 2);
+}
+
+void enable_mode() {
+	if (mode == MANHATTAN) {
+		junction_derivative = 1;
+	} else if (mode == BRABANT) {
+		junction_derivative = 3;
+	}
+
+	writeDebugStreamLine("%d", junction_derivative);
+}
 
 void toggle_stop_robot() {
 	if (!changing_speed) {
@@ -34,6 +58,9 @@ void handle_message(string msg) {
 		toggle_stop_robot();
 	} else if (msg == "A") {
 		empty_queue(nav_queue);
+	} else if (msg == "C") {
+		cycle_mode();
+		enable_mode();
 	}
 }
 

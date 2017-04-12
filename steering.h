@@ -4,7 +4,7 @@
  * @brief Contains functions for steering the NXT
  */
 
-#include "sensors_pid_enhanced.h"
+#include "sensors.h"
 
 /**
  * @brief Turns left for the given time in ms
@@ -71,22 +71,9 @@ void steer_right(int time) {
  * @param power_right
  */
 void turn_around(int power_left, int power_right) {
-	for (int i = (power_left + power_right) / 2; i > 0; i--) {
-		motor[MOTOR_L] = i;
-		motor[MOTOR_R] = i;
-		wait1Msec(10);
-	}
-
-	for (int i = 0; i < 50; i++) {
-		motor[MOTOR_L] = 20;
-		motor[MOTOR_R] = -30;
-
-		if (get_light_left() < 50 && i > 20) {
-			motor[MOTOR_L] = 0;
-			motor[MOTOR_R] = 0;
-			break;
-		}
-
-		wait1Msec(100);
-	}
+	motor[MOTOR_L] = 50;
+	motor[MOTOR_R] = -50;
+	wait1Msec(100);
+	waitUntil(get_light_left() < white_value - 5);
+	nullify_derivative();
 }
