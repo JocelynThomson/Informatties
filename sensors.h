@@ -6,11 +6,10 @@
  */
 
 #include "nav.h"
-
-#define POWER 80    /**< Defines the power value for the speed of the engines. */
+int power = 0;	/**< Defines the power value for the speed of the engines. */
 
 int white_value = 64;         /**< The value for the white colour of the board. */
-int junction_derivative = 1;  /**< The derivative for junctions. */
+int junction_derivative = 0x7FFFFFFF;  /**< The derivative for junctions. */
 
 int last_error_l = 0;   /**< The last error from the left sensor. */
 int last_error_r = 0;   /**< The last error from the right sensor. */
@@ -20,11 +19,7 @@ int last_error_r = 0;   /**< The last error from the right sensor. */
  * @return  The power for the engines.
  */
 int get_power() {
-	if (peek_direction() == FORWARD) {
-		return 1.0 * POWER;
-	}
-
-	return 1.0 * POWER;
+	return power;
 }
 
 /**

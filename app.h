@@ -5,6 +5,7 @@
  */
 
 #include "sensors.h"
+#include "nav.h"
 
 bool changing_speed = false;
 bool force_stopped = false;
@@ -27,12 +28,12 @@ void cycle_mode() {
 
 void enable_mode() {
 	if (mode == MANHATTAN) {
+		power = 90;
 		junction_derivative = 1;
 	} else if (mode == BRABANT) {
-		junction_derivative = 3;
+		power = 90;
+		junction_derivative = 2;
 	}
-
-	writeDebugStreamLine("%d", junction_derivative);
 }
 
 void toggle_stop_robot() {
@@ -41,23 +42,52 @@ void toggle_stop_robot() {
 	}
 }
 
+bool waiting_for_input_destination = false;
+int begin = 0;
+int dest = 0;
+
 /**
  * @brief Takes a string as input and runs the appropriate function.
  * @param msg
  */
 void handle_message(string msg) {
 	if (msg == "UP") {
-		enqueue_direction(FORWARD);
+		if (!waiting_for_input_destination) {
+			enqueue_direction(FORWARD);
+		} else {
+			//writeDebugStreamLine("%d", edges[dest->index][NORTH]);
+			dest = edges[dest][NORTH];
+		}
 	} else if (msg == "DOWN") {
-		enqueue_direction(TURNABOUT);
+		if (!waiting_for_input_destination) {
+			enqueue_direction(TURNABOUT);
+		} else {
+			dest = edges[dest][SOUTH];
+		}
 	} else if (msg == "LEFT") {
-		enqueue_direction(LEFT);
+		if (!waiting_for_input_destination) {
+			enqueue_direction(LEFT);
+		} else {
+			dest = edges[dest][WEST];
+		}
 	} else if (msg == "RIGHT") {
-		enqueue_direction(RIGHT);
+		if (!waiting_for_input_destination) {
+			enqueue_direction(RIGHT);
+		} else {
+			dest = edges[dest][EAST];
+		}
 	} else if (msg == "FIRE") {
 		toggle_stop_robot();
 	} else if (msg == "A") {
 		empty_queue(nav_queue);
+	} else if (msg == "B") {
+		waiting_for_input_destination = !waiting_for_input_destination;
+
+		if (!waiting_for_input_destination) {
+			clear_nodes(nodes);
+			breadth_first_search(&nodes[begin], &nodes[dest]);
+			begin = dest;
+		}
 	} else if (msg == "C") {
 		cycle_mode();
 		enable_mode();
@@ -76,6 +106,7 @@ task start_stop_task() {
 			wait1Msec(10);
 		}
 		changing_speed = false;
+		nullify_derivative();
 
 		stop_speed_multiplier = 0;
 
@@ -86,6 +117,7 @@ task start_stop_task() {
 			wait1Msec(10);
 		}
 		changing_speed = false;
+		nullify_derivative();
 
 		stop_speed_multiplier = 1;
 	}

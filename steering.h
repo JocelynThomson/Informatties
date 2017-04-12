@@ -73,7 +73,9 @@ void steer_right(int time) {
 void turn_around(int power_left, int power_right) {
 	motor[MOTOR_L] = 50;
 	motor[MOTOR_R] = -50;
-	wait1Msec(100);
-	waitUntil(get_light_left() < white_value - 5);
+	wait1Msec(1400);
+	nullify_derivative();
+	waitUntil(get_light_right() < white_value - 5);
+	waitUntil(get_light_right() > white_value - 5);
 	nullify_derivative();
 }

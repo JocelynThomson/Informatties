@@ -68,7 +68,7 @@ void calibrate() {
  */
 
 task findPath() {
-	//breadth_first_search(&nodes[0], &nodes[24]);
+//	breadth_first_search(&nodes[0], &nodes[24]);
 }
 
 task main() {
@@ -81,20 +81,27 @@ task main() {
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
 
+	enable_mode();
+
 	nullify_derivative();
 
 	while (1) {
-		//print_status();
-
 		int power_left = get_power_left(stop_speed_multiplier);
 		int power_right = get_power_right(stop_speed_multiplier);
+
+		//writeDebugStreamLine("%d %d", power_left, power_right);
+
 		int sonar_value = get_sonar();
 
 		if (status == FOLLOWING_LINE) {
-			playSoundFile("! Attention.rso");
+			if (mode == BRABANT) {
+				//playSoundFile("! Attention.rso");
+			} else if (mode == MANHATTAN) {
+				//playSoundFile("! Startup.rso");
+			}
 		}
 
-		if ((power_left == 0 || power_right == 0) && abs(power_left - power_right) < 5) {
+		if ((power_left == 0 || power_right == 0) && abs(power_left - power_right) < 5 && force_stopped == false) {
 			status = SLOWING_DOWN_JUNCTION;
 		}
 
@@ -197,14 +204,17 @@ task main() {
 
 		//writeDebugStreamLine("%d", sonar_value);
 
-		if(sonar_value < 15){
+		if(sonar_value <= 10){
 			turn_around(power_left, power_right);
 
 			if (mode == MANHATTAN) {
 				cur_car_dir += 2;
 				next_node->enabled = false;
+
+				writeDebugStreamLine("node: %d enabled: %d", next_node->index, next_node->enabled);
+
 				empty_queue(&nav_queue);
-				breadth_first_search(next_node, going_to_node);
+				breadth_first_search(last_node, going_to_node);
 			}
 		}
 

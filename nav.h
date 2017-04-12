@@ -193,7 +193,7 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 	going_to_node = stop_node;
 	writeDebugStreamLine("CALCULATING PATH FROM: %d TO: %d", start_node->index, stop_node->index);
 
-	clear_nodes(nodes);
+	//clear_nodes(nodes);
 	start_node->parent = NULL;
 	start_node->distance = 0;
 
@@ -212,23 +212,23 @@ int breadth_first_search(Node* start_node, Node* stop_node) {
 		Node* node = dequeue_node(&bfs_queue);
 		//writeDebugStreamLine("%p", node);
 
-		if (node->enabled) {
-			for (int  j = 0; j < NUM_EDGES; j++) {
-				int connected_node_index = edges[node->index][j];
+		for (int  j = 0; j < NUM_EDGES; j++) {
+			int connected_node_index = edges[node->index][j];
 
-				if (connected_node_index != -1) {
-					Node* connected_node = &nodes[connected_node_index];
+			if (connected_node_index != -1) {
+				Node* connected_node = &nodes[connected_node_index];
 
-					if (connected_node == stop_node) {
-						stop_node->parent = node;
-						goto found_route;
-					}
+				if (connected_node == stop_node) {
+					stop_node->parent = node;
+					goto found_route;
+				}
 
-					if (connected_node->distance == INFINITY) {
-						connected_node->distance = node->distance + 1;
-						connected_node->parent = node;
-						enqueue_node(&bfs_queue, connected_node);
-					}
+				writeDebugStreamLine("node: %d enabled: %d", connected_node->index, connected_node->enabled);
+
+				if (connected_node->distance == INFINITY && connected_node->enabled) {
+					connected_node->distance = node->distance + 1;
+					connected_node->parent = node;
+					enqueue_node(&bfs_queue, connected_node);
 				}
 			}
 		}
