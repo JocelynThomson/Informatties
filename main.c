@@ -12,11 +12,14 @@
  * @brief Main loop for the robot
  */
 
+/**
+ * @brief Enumeration for the statu of the robot.
+ */
 enum STATUS_ENUM {
-	FOLLOWING_LINE = 0,
-	SLOWING_DOWN_JUNCTION = 1,
-	SCANNING_JUNCTION = 2,
-	WAITING_FOR_DIRECTION = 3
+	FOLLOWING_LINE = 0,			/**< Robot is following the line */
+	SLOWING_DOWN_JUNCTION = 1,	/**< Slowing down for approaching junction */
+	SCANNING_JUNCTION = 2,		/**< Scanning for junction */
+	WAITING_FOR_DIRECTION = 3	/**< Waiting for direction */
 };
 
 STATUS_ENUM status = FOLLOWING_LINE;
@@ -46,37 +49,14 @@ void print_status() {
 	}
 }
 
-void calibrate() {
-	int black = 64;
-	int white = 0;
-
-	for (int i = 0; i < 100; i++) {
-		motor[MOTOR_L] = -20;
-		motor[MOTOR_R] = 20;
-		int lv = get_light_left();
-
-		if (lv > white) {
-			white = lv;
-		}
-		wait1Msec(10);
-	}
-}
-
 /**
  * @brief Main loop for the robot.
  * @todo Shrink the main loop and put large chunks of code in functions.
  */
-
-task findPath() {
-//	breadth_first_search(&nodes[0], &nodes[24]);
-}
-
 task main() {
 	white_value = get_light_left();
 	init_nav_queue();
 	init_app();
-
-	startTask(findPath);
 
 	nMotorEncoder[motorB] = 0;
 	nMotorEncoder[motorC] = 0;
@@ -89,15 +69,13 @@ task main() {
 		int power_left = get_power_left(stop_speed_multiplier);
 		int power_right = get_power_right(stop_speed_multiplier);
 
-		//writeDebugStreamLine("%d %d", power_left, power_right);
-
 		int sonar_value = get_sonar();
 
 		if (status == FOLLOWING_LINE) {
 			if (mode == BRABANT) {
-				//playSoundFile("! Attention.rso");
+				playSoundFile("! Attention.rso");
 			} else if (mode == MANHATTAN) {
-				//playSoundFile("! Startup.rso");
+				playSoundFile("! Startup.rso");
 			}
 		}
 
@@ -119,14 +97,6 @@ task main() {
 				wait1Msec(10);
 			}
 
-			//int p = get_power();
-
-			//for (int i = p; i > 0; i--) {
-			//	motor[MOTOR_L] = i;
-			//	motor[MOTOR_R] = i;
-			//	wait1Msec(7);
-			//}
-
 			status = WAITING_FOR_DIRECTION;
 		}
 
@@ -145,9 +115,6 @@ task main() {
 
 			switch(dir) {
 				case LEFT:
-					//steer_left(1000);
-					//status = FOLLOWING_LINE;
-
 					motor[MOTOR_L] = -p;
 					motor[MOTOR_R] = p;
 
@@ -166,9 +133,6 @@ task main() {
 					status = FOLLOWING_LINE;
 				break;
 				case RIGHT:
-					//steer_right(1000);
-					//status = FOLLOWING_LINE;
-
 					motor[MOTOR_L] = p;
 					motor[MOTOR_R] = -p;
 
@@ -191,18 +155,10 @@ task main() {
 					status = FOLLOWING_LINE;
 				break;
 				case FORWARD:
-					//int origin_l = get_light_left();
-					//int origin_r = get_light_right();
-					////int p = get_power();
-					//motor[MOTOR_L] = p;
-					//motor[MOTOR_R] = p;
-					//waitUntil(get_light_left() > origin_l && get_light_right() > origin_r);
 					status = FOLLOWING_LINE;
 				break;
 			}
 		}
-
-		//writeDebugStreamLine("%d", sonar_value);
 
 		if(sonar_value <= 10){
 			turn_around(power_left, power_right);
@@ -211,14 +167,12 @@ task main() {
 				cur_car_dir += 2;
 				next_node->enabled = false;
 
-				writeDebugStreamLine("node: %d enabled: %d", next_node->index, next_node->enabled);
-
 				empty_queue(&nav_queue);
 				breadth_first_search(last_node, going_to_node);
 			}
 		}
 
-   	motor[MOTOR_L] = power_left;
+   		motor[MOTOR_L] = power_left;
 		motor[MOTOR_R] = power_right;
 
 		if (stop_speed_multiplier == 0.0) {
