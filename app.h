@@ -14,18 +14,27 @@ float stop_speed_multiplier = 1.0;
 const int kMaxSizeOfMessage = 30;
 const int INBOX = 5;
 
+/**
+ * @brief The different maps
+ */
 enum MODE {
-	MANHATTAN = 0,
-	BRABANT = 1
+	MANHATTAN = 0,	/**< BFS grid map */
+	BRABANT = 1		/**< Default map */
 };
 
 MODE mode = MANHATTAN;
 
+/**
+ * @brief Changes the map mode
+ */
 void cycle_mode() {
 	mode++;
 	mode = (MODE) (mode % 2);
 }
 
+/**
+ * @brief Applies the configuration of the mode to the robot
+ */
 void enable_mode() {
 	if (mode == MANHATTAN) {
 		power = 90;
@@ -36,6 +45,9 @@ void enable_mode() {
 	}
 }
 
+/**
+ * @brief Toggles the flag force_stopped to indicate if the robot is being forced to stop
+ */
 void toggle_stop_robot() {
 	if (!changing_speed) {
 		force_stopped = !force_stopped;
@@ -47,8 +59,8 @@ int begin = 0;
 int dest = 0;
 
 /**
- * @brief Takes a string as input and runs the appropriate function.
- * @param msg
+ * @brief 		Takes a string as input and runs the appropriate function.
+ * @param msg 	The command from the app
  */
 void handle_message(string msg) {
 	if (msg == "UP") {
