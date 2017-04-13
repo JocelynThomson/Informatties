@@ -4,6 +4,9 @@
  * @brief	Receives and handles input from the app.
  */
 
+#ifndef APP_H_
+#define APP_H_
+
 #include "sensors.h"
 #include "nav.h"
 
@@ -37,10 +40,10 @@ void cycle_mode() {
  */
 void enable_mode() {
 	if (mode == MANHATTAN) {
-		power = 90;
+		power = 60;
 		junction_derivative = 1;
 	} else if (mode == BRABANT) {
-		power = 90;
+		power = 60;
 		junction_derivative = 2;
 	}
 }
@@ -67,7 +70,6 @@ void handle_message(string msg) {
 		if (!waiting_for_input_destination) {
 			enqueue_direction(FORWARD);
 		} else {
-			//writeDebugStreamLine("%d", edges[dest->index][NORTH]);
 			dest = edges[dest][NORTH];
 		}
 	} else if (msg == "DOWN") {
@@ -170,3 +172,4 @@ void init_app() {
 	startTask(app_task);
 	startTask(start_stop_task);
 }
+#endif

@@ -5,6 +5,9 @@
  *          adjusts the motors accordingly. The calbiration is done by a PD-conrtroller (Proportional Differential).
  */
 
+#ifndef SENSORS_H_
+#define SESNORS_H_
+
 #include "nav.h"
 int power = 0;	/**< Defines the power value for the speed of the engines. */
 
@@ -103,3 +106,4 @@ void nullify_derivative() {
 	error = (light_val - white_value);
 	last_error_r = error;
 }
+#endif

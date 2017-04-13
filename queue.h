@@ -4,6 +4,9 @@
  * @brief   This file implements the queue datastructure.
  */
 
+#ifndef QUEUE_H_
+#define QUEUE_H_
+
 #define QUEUESIZE 128
 
 /**
@@ -81,16 +84,4 @@ int dequeue(Queue* pq) {
 
 	return data;
 }
-
-/**
- * @brief      Looks at the first item in the queue.
- * @param pq   The pointer to the queue.
- * @return     The first item in the queue or zero if the queue is empty.
- */
-int peek(Queue* pq) {
-	if (pq->item_count == 0) {
-		return -1;
-	}
-
-	return pq->a[pq->head];
-}
+#endif

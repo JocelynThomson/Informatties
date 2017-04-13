@@ -18,8 +18,7 @@
 enum STATUS_ENUM {
 	FOLLOWING_LINE = 0,			/**< Robot is following the line */
 	SLOWING_DOWN_JUNCTION = 1,	/**< Slowing down for approaching junction */
-	SCANNING_JUNCTION = 2,		/**< Scanning for junction */
-	WAITING_FOR_DIRECTION = 3	/**< Waiting for direction */
+	WAITING_FOR_DIRECTION = 2	/**< Waiting for direction */
 };
 
 STATUS_ENUM status = FOLLOWING_LINE;
@@ -28,26 +27,6 @@ STATUS_ENUM status = FOLLOWING_LINE;
 #include "nav.h"
 #include "app.h"
 #include "steering.h"
-
-/**
- * @brief Converts the status enum to string and prints it immediately.
- */
-void print_status() {
-	switch (status) {
-		case FOLLOWING_LINE:
-			writeDebugStreamLine("FOLLOWING_LINE");
-		break;
-		case SLOWING_DOWN_JUNCTION:
-			writeDebugStreamLine("SLOWING_DOWN_JUNCTION");
-		break;
-		case SCANNING_JUNCTION:
-			writeDebugStreamLine("SCANNING_JUNCTION");
-		break;
-		case WAITING_FOR_DIRECTION:
-			writeDebugStreamLine("WAITING_FOR_DIRECTION");
-		break;
-	}
-}
 
 /**
  * @brief Main loop for the robot.
@@ -115,47 +94,16 @@ task main() {
 
 			switch(dir) {
 				case LEFT:
-					motor[MOTOR_L] = -p;
-					motor[MOTOR_R] = p;
-
-					waitUntil(get_light_left() < white_value - 5);
-
-					motor[MOTOR_L] = -p;
-					motor[MOTOR_R] = p;
-
-					waitUntil(get_light_left() > white_value - 5);
-					wait1Msec(50);
-
-					motor[MOTOR_L] = -p;
-					motor[MOTOR_R] = p;
-
-					nullify_derivative();
-					status = FOLLOWING_LINE;
+					turn_left(p);
 				break;
 				case RIGHT:
-					motor[MOTOR_L] = p;
-					motor[MOTOR_R] = -p;
-
-					waitUntil(get_light_right() < white_value - 5);
-
-					motor[MOTOR_L] = p;
-					motor[MOTOR_R] = -p;
-
-					waitUntil(get_light_right() > white_value - 5);
-					wait1Msec(50);
-
-					motor[MOTOR_L] = p;
-					motor[MOTOR_R] = -p;
-
-					nullify_derivative();
-					status = FOLLOWING_LINE;
+					turn_right(p);
 				break;
 				case TURNABOUT:
 					turn_around(power_left, power_right);
-					status = FOLLOWING_LINE;
 				break;
 				case FORWARD:
-					status = FOLLOWING_LINE;
+					go_forward();
 				break;
 			}
 		}
@@ -164,7 +112,7 @@ task main() {
 			turn_around(power_left, power_right);
 
 			if (mode == MANHATTAN) {
-				cur_car_dir += 2;
+				cur_car_dir = (CARDINAL_DIRECTION) (cur_car_dir + 2);
 				next_node->enabled = false;
 
 				empty_queue(&nav_queue);

@@ -4,6 +4,9 @@
  * @brief This file defines the navigation queue
  */
 
+#ifndef NAV_H_
+#define NAV_H_
+
 #include "queue.h"
 
 #define NO_NODE -1
@@ -44,7 +47,7 @@ enum CARDINAL_DIRECTION {
 };
 
 /**
- * @brief This 2d-integer array holds all the edges or connections between each individual node. Each node 
+ * @brief This 2d-integer array holds all the edges or connections between each individual node. Each node
  *        can have a maximum of four edges. For example, the first node N0 in the array is connected with
  *        the nodes N5 and N1.
  */
@@ -99,34 +102,6 @@ void push_back_action(DIRECTION dir) {
 
 	last_node = next_node;
 	next_node = &nodes[edges[last_node->index][cur_car_dir]];
-
-	writeDebugStreamLine("MOVING FROM NODE: %d TOWARDS NODE: %d", last_node->index, next_node->index);
-	writeDebugStreamLine("CARDINAL_DIRECTION: %d", cur_car_dir);
-
-}
-
-/**
- * @brief		Prints the current direction of the robot.
- * @param dir 	The direction of the robot.
- */
-void print_direction(DIRECTION dir) {
-	switch (dir) {
-		case NONE:
-			writeDebugStreamLine("NONE");
-		break;
-		case FORWARD:
-			writeDebugStreamLine("FORWARD");
-		break;
-		case RIGHT:
-			writeDebugStreamLine("RIGHT");
-		break;
-		case TURNABOUT:
-			writeDebugStreamLine("TURNABOUT");
-		break;
-		case LEFT:
-			writeDebugStreamLine("LEFT");
-		break;
-	}
 }
 
 /**
@@ -149,13 +124,6 @@ void enqueue_direction(DIRECTION dir) {
  */
 DIRECTION dequeue_direction() {
 	return (DIRECTION) dequeue(&nav_queue);
-}
-
-/**
- * @brief Returns but does not remove the next element from the queue
- */
-DIRECTION peek_direction() {
-	return (DIRECTION) peek(&nav_queue);
 }
 
 /**
@@ -201,9 +169,8 @@ void enqueue_path(int depth) {
 		for (int j = 0; j < 4; j++) {
 			if (edges[curr_node->index][j] == next_node->index) {
 				DIRECTION turn_dir = translate_world_to_local(loc_cur_car_dir, j);
-				print_direction(turn_dir);
 				enqueue_direction(turn_dir);
-				loc_cur_car_dir = j;
+				loc_cur_car_dir = (CARDINAL_DIRECTION) j;
 			}
 		}
 	}
@@ -290,14 +257,8 @@ found_route:
 		parent = parent->parent;
 	}
 
-	depth++;
-
-	for (int i = 0; i < depth; i++) {
-		Node* n = path[i];
-		writeDebugStreamLine("%d: %d", i, n->index);
-	}
-
-	enqueue_path(depth);
+	enqueue_path(++depth);
 
 	return 1;
 }
+#endif
